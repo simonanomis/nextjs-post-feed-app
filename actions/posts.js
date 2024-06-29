@@ -1,6 +1,7 @@
 "use server"
-import {storePost} from "@/lib/posts";
+import {storePost, updatePostLikeStatus} from "@/lib/posts";
 import {redirect} from "next/navigation";
+import {revalidatePath} from "next/cache";
 
 export async function createPost(formData) {
     const title = formData.get('title');
@@ -24,6 +25,14 @@ export async function createPost(formData) {
     if (errors.length > 0) {
         return { errors };
     }
+    //
+    // let imageUrl = '';
+    // try {
+    //     imageUrl = await uploadImage(image);
+    // } catch (error) {
+    //     throw new Error('Image upload failed. Please try again');
+    // }
+
 
     await storePost({
         imageUrl: '',
@@ -32,5 +41,11 @@ export async function createPost(formData) {
         userId: 1,
     });
 
+    revalidatePath('/', 'layout')
     redirect('/feed');
+}
+
+export async function togglePostLikeStatus(postId) {
+    await updatePostLikeStatus(postId, 2);
+    revalidatePath('/', 'layout')
 }
